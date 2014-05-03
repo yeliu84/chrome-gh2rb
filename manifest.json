@@ -1,0 +1,15 @@
+{
+    "manifest_version": 2,
+
+    "name": "GitHub -> Redbooth",
+    "version": "0.0.1",
+    "description": "Creates links from GitHub to Redbooth",
+
+    "permissions": [
+        "https://github.com/*",
+
+        "storage"
+    ],
+
+    "options_page": "options.html"
+}

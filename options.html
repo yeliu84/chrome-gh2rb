@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+    <head>
+        <title>GitHub -> Redbooth Options</title>
+        <link rel="stylesheet" href="options.css">
+        <script src="gh2rb.js"></script>
+        <script src="options.js"></script>
+    </head>
+    <body>
+        <h1>GitHub -> Redbooth Options</h1>
+        <section>
+            <ul id="proj-list">
+                <li id="proj-item-tpl">
+                    <span class="proj-name"></span>
+                    <span class="proj-id"></span>
+                    <span class="proj-remove"><a href="">Remove</a></span>
+                </li>
+            </ul>
+            <p id="no-proj-msg">No projects</p>
+        </section>
+        <section>
+            <form>
+                <input type="text" id="proj-name-field" placeholder="GitHub project name">
+                <input type="text" id="proj-id-field" placeholder="Redbooth project ID">
+                <button id="add-button" disabled="disabled">Add</button>
+            </form>
+            <p id="notification"></p>
+        </section>
+    </body>
+</html>
