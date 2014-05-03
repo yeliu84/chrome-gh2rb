@@ -7,6 +7,32 @@ window.onload = function() {
     var addButton = document.querySelector('#add-button');
     var notification = document.querySelector('#notification');
 
+    var gh2rb = {
+        getBgGh2rb: function(callback) {
+            chrome.runtime.getBackgroundPage(function(bg) {
+                callback(bg.gh2rb);
+            });
+        },
+        loadProjects: function() {
+            var args = arguments;
+            this.getBgGh2rb(function(bgGh2rb) {
+                bgGh2rb.loadProjects.apply(bgGh2rb, args);
+            });
+        },
+        addProject: function() {
+            var args = arguments;
+            this.getBgGh2rb(function(bgGh2rb) {
+                bgGh2rb.addProject.apply(bgGh2rb, args);
+            });
+        },
+        removeProject: function() {
+            var args = arguments;
+            this.getBgGh2rb(function(bgGh2rb) {
+                bgGh2rb.removeProject.apply(bgGh2rb, args);
+            });
+        },
+    };
+
     function getListItemId(projName, projId) {
         return 'proj-item-' + projName + '-' + projId;
     }

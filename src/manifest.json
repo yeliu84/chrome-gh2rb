@@ -6,10 +6,19 @@
     "description": "Creates links from GitHub to Redbooth",
 
     "permissions": [
-        "https://github.com/*",
-
-        "storage"
+        "storage",
+        "https://github.com/*"
     ],
 
-    "options_page": "options.html"
+    "background": {
+        "scripts": ["gh2rb.js"],
+        "persistent": false
+    },
+
+    "options_page": "options.html",
+
+    "content_scripts": [{
+        "matches": ["https://github.com/*"],
+        "js": ["create-links.js"]
+    }]
 }
