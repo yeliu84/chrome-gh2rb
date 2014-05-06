@@ -107,5 +107,33 @@ window.gh2rb = {
         }
 
         return -1;
-    }
+    },
+
+    onMessage: function(request, sender, sendResponse) {
+        var me = this;
+        var fn = request.fn;
+        var params = request.params || [];
+
+        if (Object.prototype.toString.call(me[fn]) === '[object Function]') {
+            params.push(function() {
+                var results = Array.prototype.slice.call(arguments);
+                var error = results.splice(0, 1)[0];
+                sendResponse({
+                    error: error,
+                    results: results
+                });
+            });
+
+            me[fn].apply(me, params);
+            return true;
+        } else {
+            sendResponse({
+                error: 'fn ' + fn + ' is not a function'
+            });
+        }
+    },
 };
+
+chrome.runtime.onMessage.addListener(function() {
+    return window.gh2rb.onMessage.apply(window.gh2rb, arguments);
+});
