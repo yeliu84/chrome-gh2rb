@@ -1,4 +1,10 @@
 window.gh2rb = {
+    __version__: '0.0.1',
+    __license__: 'MIT',
+    __author__: 'Ye Liu',
+    __contact__: 'yeliu@instast.com',
+    __copyright__: 'Copyright (c) 2014 Ye Liu',
+
     projects: null,
 
     loadProjects: function(callback) {
