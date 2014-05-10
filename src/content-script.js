@@ -13,13 +13,6 @@ function processPage(projectMap) {
         return false;
     }
 
-    function isCommitPage() {
-        if (isProjectDefined && parts[3] === 'commit') {
-            return true;
-        }
-        return false;
-    }
-
     function buildTaskUrl(projectId, taskId) {
         return 'https://redbooth.com/a/#!/projects/' + projectId + '/tasks/' + taskId;
     }
