@@ -1,11 +1,9 @@
-function processPage(projects) {
+function processPage(projectMap) {
     var path = window.location.pathname;
     console.log('path = ' + path);
-    var projectMap = {};
-
-    for (var i = 0, len = projects.length; i < len; i++) {
-        projectMap[projects[i].name] = projects[i].id;
-    }
+    var parts = path.split('/');
+    var project = parts[2];
+    var isProjectDefined = project in projectMap;
 
     function isNewsPage() {
         if (/.+dashboard$/.test(path)) {
@@ -16,19 +14,83 @@ function processPage(projects) {
         return false;
     }
 
-    function isProjectPage() {
-        var projName = path.split('/')[2];
-        return projName in projectMap;
-    }
-
-    function isCommitsPage() {
-    }
-
     function isCommitPage() {
+        if (isProjectDefined && parts[3] === 'commit') {
+            return true;
+        }
+        return false;
     }
 
-    function convertCommitMessage(msg) {
-        return msg;
+    function buildTaskUrl(projectId, taskId) {
+        return 'https://redbooth.com/a/#!/projects/' + projectId + '/tasks/' + taskId;
+    }
+
+    function buildTaskAnchor(projectId, taskId) {
+        return '<a href="' + buildTaskUrl(projectId, taskId) + '" target="_blank">' + taskId + '</a>';
+    }
+
+    function convertCommitMessage(msg, projectId) {
+        return msg.replace(/\[(\d+)\]/g, function(m, taskId) {
+            return '[' + buildTaskAnchor(projectId, taskId) + ']';
+        });
+    }
+
+    function convertPlainText(commitMsgElems, projectId) {
+        for (var i = 0, len = commitMsgElems.length; i < len; i++) {
+            commitMsgElems[i].innerHTML = convertCommitMessage(commitMsgElems[i].innerHTML, projectId);
+        }
+    }
+
+    function convertAnchor(commitMsgElems, projectId) {
+        var anchor;
+        var parentNode;
+        var msg;
+        var removed;
+        var clone;
+        var span;
+        var pat = /([^\[\]]*)\[(\d+)\]([^\[\]]*)/g;
+        var match;
+        var before;
+        var taskId;
+        var after;
+
+        for (var i = 0, len = commitMsgElems.length; i < len; i++) {
+            anchor = commitMsgElems[i];
+            parentNode = anchor.parentNode;
+            msg = anchor.innerHTML;
+            console.log(msg);
+            removed = false;
+
+            match = pat.exec(msg);
+            while (match) {
+                before = match[1];
+                taskId = match[2];
+                after = match[3];
+
+                if (!removed) {
+                    parentNode.removeChild(anchor);
+                    removed = true;
+                }
+
+                if (before) {
+                    clone = anchor.cloneNode();
+                    clone.innerHTML = before;
+                    parentNode.appendChild(clone);
+                }
+
+                span = document.createElement('span');
+                span.innerHTML = '[' + buildTaskAnchor(projectId, taskId) + ']';
+                parentNode.appendChild(span);
+
+                if (after) {
+                    clone = anchor.cloneNode();
+                    clone.innerHTML = after;
+                    parentNode.appendChild(clone);
+                }
+
+                match = pat.exec(msg);
+            }
+        }
     }
 
     function processNewsPage() {
@@ -38,7 +100,6 @@ function processPage(projects) {
         var titleDiv;
         var projName;
         var projId;
-        var commitMsgElems;
 
         for (var i = 0, aLen = alertDivs.length; i < aLen; i++) {
             alertDiv = alertDivs[i];
@@ -46,37 +107,50 @@ function processPage(projects) {
             projName = titleDiv.lastElementChild.innerHTML.split('/')[1];
             projId = projectMap[projName];
             if (projId) {
-                commitMsgElems = alertDiv.querySelectorAll('.details .commits .message blockquote');
-                for (var j = 0, cLen = commitMsgElems.length; j < cLen; j++) {
-                    commitMsgElems.innerHTML = convertCommitMessage(commitMsgElems.innerHTML);
-                }
+                convertPlainText(alertDiv.querySelectorAll('.details .commits .message blockquote'), projId);
             }
         }
     }
 
-    function processProjectPage() {
-        var commitMsgElems = document.querySelectorAll('a.message');
+    function processCommitTitlePage() {
+        convertPlainText(document.querySelectorAll('p.commit-title'), projectMap[project]);
+    }
 
-        for (var i = 0, len = commitMsgElems.length; i < len; i++) {
-            commitMsgElems[i].innerHTML = convertCommitMessage(commitMsgElems[i].innerHTML);
+    function processCommitAnchorPage() {
+        convertAnchor(document.querySelectorAll('a.message'), projectMap[project]);
+    }
+
+    if (isProjectDefined) {
+        switch (parts[3]) {
+        case 'commits':
+            processCommitAnchorPage();
+            break;
+        case 'tree':
+            processCommitAnchorPage();
+            break;
+        case 'blob':
+            processCommitAnchorPage();
+            break;
+        case 'commit':
+            processCommitTitlePage();
+            break;
+        default:
+            processCommitAnchorPage();
+            break;
+        }
+    } else if (isNewsPage()) {
+        processNewsPage();
+    }
+
+    function checkLocation() {
+        if (path !== window.location.pathname) {
+            processPage(projectMap);
+        } else {
+            setTimeout(checkLocation, 1000);
         }
     }
 
-    function processCommitsPage() {
-    }
-
-    function processCommitPage() {
-    }
-
-    if (isNewsPage()) {
-        processNewsPage();
-    } else if (isProjectPage()) {
-        processProjectPage();
-    } else if (isCommitsPage()) {
-        processCommitsPage();
-    } else if (isCommitPage()) {
-        processCommitPage();
-    }
+    checkLocation();
 }
 
 chrome.runtime.sendMessage({fn: 'loadProjects'}, function(response) {
@@ -87,6 +161,11 @@ chrome.runtime.sendMessage({fn: 'loadProjects'}, function(response) {
         return;
     }
 
-    processPage(projects);
-});
+    var projectMap = {};
 
+    for (var i = 0, len = projects.length; i < len; i++) {
+        projectMap[projects[i].name] = projects[i].id;
+    }
+
+    processPage(projectMap);
+});
