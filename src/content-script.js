@@ -1,6 +1,5 @@
 function processPage(projectMap) {
     var path = window.location.pathname;
-    console.log('path = ' + path);
     var parts = path.split('/');
     var project = parts[2];
     var isProjectDefined = project in projectMap;
