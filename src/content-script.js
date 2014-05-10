@@ -1,5 +1,6 @@
 function processPage(projects) {
     var path = window.location.pathname;
+    console.log('path = ' + path);
     var projectMap = {};
 
     for (var i = 0, len = projects.length; i < len; i++) {
@@ -16,6 +17,8 @@ function processPage(projects) {
     }
 
     function isProjectPage() {
+        var projName = path.split('/')[2];
+        return projName in projectMap;
     }
 
     function isCommitsPage() {
@@ -52,6 +55,11 @@ function processPage(projects) {
     }
 
     function processProjectPage() {
+        var commitMsgElems = document.querySelectorAll('a.message');
+
+        for (var i = 0, len = commitMsgElems.length; i < len; i++) {
+            commitMsgElems[i].innerHTML = convertCommitMessage(commitMsgElems[i].innerHTML);
+        }
     }
 
     function processCommitsPage() {
